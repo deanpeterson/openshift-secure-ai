@@ -14,7 +14,7 @@
 #   7. GPU availability
 #
 
-set -euo pipefail
+set -uo pipefail
 
 CLUSTER_DOMAIN="apps.salamander.aimlworkbench.com"
 PASS=0
@@ -67,7 +67,7 @@ check_pods "rhdh-test" "app.kubernetes.io/name=developer-hub" "Developer Hub pod
 
 RHDH_HOST=$(oc get route -n rhdh-test -o jsonpath='{.items[0].spec.host}' 2>/dev/null || true)
 if [ -n "$RHDH_HOST" ]; then
-    HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 5 "https://${RHDH_HOST}" 2>/dev/null || echo "000")
+    HTTP_CODE=$(curl -sk -o /dev/null -w "%{http_code}" --connect-timeout 5 "https://${RHDH_HOST}" 2>/dev/null || echo "000")
     if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 500 ]; then
         pass "Developer Hub route (https://${RHDH_HOST} → HTTP $HTTP_CODE)"
     else
@@ -82,7 +82,7 @@ echo ""
 
 echo -e "${BOLD}[2/7] OpenShift AI${NC}"
 check_pods "redhat-ods-operator" "" "OpenShift AI operator"
-check_pods "redhat-ods-applications" "app=odh-dashboard" "OpenShift AI dashboard"
+check_pods "redhat-ods-applications" "app=rhods-dashboard" "OpenShift AI dashboard"
 
 DSC_READY=$(oc get dsc -o jsonpath='{.items[0].status.conditions[?(@.type=="Ready")].status}' 2>/dev/null || true)
 if [ "$DSC_READY" = "True" ]; then
